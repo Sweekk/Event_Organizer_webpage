@@ -1,103 +1,88 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
+import Link from 'next/link';
+// EventList removed from main page; events are shown on /events
 
-export default function Home() {
+const defaultEvents = [
+  { id: 1, title: 'Freshers Fiesta', date: '2025-10-20', location: 'Auditorium' },
+  { id: 2, title: 'Tech Quiz', date: '2025-11-05', location: 'Lab 3' },
+];
+
+export default function HomePage(){
+  const [events, setEvents] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ title: '', date: '', location: '' });
+
+  function addEvent(e){
+    e.preventDefault();
+    if(!form.title.trim()) return;
+    const next = { id: Date.now(), ...form };
+    setEvents(prev => {
+      const nextState = [next, ...prev];
+      try{ localStorage.setItem('events', JSON.stringify(nextState)); }catch(e){}
+      return nextState;
+    });
+    setForm({ title: '', date: '', location: '' });
+    setShowForm(false);
+  }
+
+  // load initial events from localStorage (or use defaults)
+  useEffect(() => {
+    try{
+      const raw = localStorage.getItem('events');
+      if(raw){
+        setEvents(JSON.parse(raw));
+      } else {
+        setEvents(defaultEvents);
+        localStorage.setItem('events', JSON.stringify(defaultEvents));
+      }
+    }catch(err){
+      setEvents(defaultEvents);
+    }
+  }, []);
+
+  // persist events whenever they change
+  useEffect(() => {
+    try{ localStorage.setItem('events', JSON.stringify(events)); }catch(e){}
+  }, [events]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="container">
+      <header className="app-header">
+        <h1 className="app-title">College Fest Portal</h1>
+        <div className="controls">
+          <button className="btn" onClick={() => setShowForm(s => !s)}>
+            {showForm ? 'Close' : 'Add Event'}
+          </button>
+          <Link href="/events">
+            <button className="btn btn-primary">View Events</button>
+          </Link>
         </div>
+      </header>
+
+      <section className="hero">
+        <h2 style={{ margin: '0 0 8px 0' }}>Welcome to your event organizer</h2>
+        <p style={{ margin: 0 }}>Create and manage college events — schedules, locations and more.</p>
+      </section>
+
+      {showForm && (
+        <form onSubmit={addEvent} className="card" style={{ marginBottom: 20 }}>
+          <div className="form-grid">
+            <input className="input" placeholder="Event title" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} />
+            <input className="input" type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} />
+            <input className="input" placeholder="Location" value={form.location} onChange={e=>setForm(f=>({...f,location:e.target.value}))} style={{ gridColumn: '1 / -1' }} />
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <button className="btn btn-primary" type="submit" style={{ marginRight: 8 }}>Save Event</button>
+            <button className="btn" type="button" onClick={() => setShowForm(false)}>Cancel</button>
+          </div>
+        </form>
+      )}
+
+      <main>
+        <p className="muted">Events are listed on a separate page. Click &quot;View Events&quot; to see them.</p>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
+
 }
