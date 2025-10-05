@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 
 export default function EventList({ events, onDelete }){
   return (
@@ -11,9 +12,11 @@ export default function EventList({ events, onDelete }){
         <ul className="event-list">
           {events.map(ev => (
             <li key={ev.id} className="event-item">
-              <div>
-                <div className="event-title">{ev.title}</div>
-                <div className="event-meta">{ev.date} · {ev.location}</div>
+              <div style={{ flex: 1 }}>
+                <Link href={`/events/${ev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className="event-title">{ev.title}</div>
+                  <div className="event-meta">{ev.date} · {ev.location}</div>
+                </Link>
               </div>
               <div>
                 <button className="btn" onClick={() => onDelete(ev.id)}>Delete</button>

@@ -57,6 +57,9 @@ export default function HomePage(){
           <Link href="/events">
             <button className="btn btn-primary">View Events</button>
           </Link>
+          <Link href="/events/registration">
+            <button className="btn">Register</button>
+          </Link>
         </div>
       </header>
 
